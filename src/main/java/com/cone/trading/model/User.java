@@ -1,5 +1,6 @@
 package com.cone.trading.model;
 
+import com.cone.trading.domain.USER_ROLE;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -18,7 +19,10 @@ public class User {
     private String email ;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password ;
-    private USER_ROLE role ;
+
+
+
+    private USER_ROLE role = USER_ROLE.ROLE_CUSTOMER ;
 
 
 }
