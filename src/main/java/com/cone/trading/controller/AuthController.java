@@ -82,6 +82,18 @@ public class AuthController {
         // create jwt token
         String jwt = JwtProvider.generateToken(auth);
 
+        if (user.getTwoFactorAuth().isEnabled())
+        {
+            AuthResponse res = new AuthResponse();
+
+            res.setMessage("Two Factor Auth is Enabled");
+
+            res.setTwoFactorAuthEnabled(true);
+
+
+
+        }
+
         AuthResponse res = new AuthResponse();
         res.setJwt(jwt);
         res.setStatus(true);
