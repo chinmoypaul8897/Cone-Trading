@@ -1,10 +1,13 @@
 package com.cone.trading.controller;
 
 import com.cone.trading.config.JwtProvider;
+import com.cone.trading.model.TwoFactorOTP;
 import com.cone.trading.model.User;
 import com.cone.trading.repository.UserRepository;
 import com.cone.trading.response.AuthResponse;
 import com.cone.trading.service.CustomeUserDetailsService;
+import com.cone.trading.service.TwoFactorOtpService;
+import com.cone.trading.utils.OtpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -27,6 +30,9 @@ public class AuthController {
 
     @Autowired
     private CustomeUserDetailsService customeUserDetailsService ;
+
+    @Autowired
+    private TwoFactorOtpService twoFactorOtpService;
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> register(@RequestBody User user ) throws Exception
@@ -82,6 +88,8 @@ public class AuthController {
         // create jwt token
         String jwt = JwtProvider.generateToken(auth);
 
+        User authUser = userRepository.findByEmail(userName);
+
         if (user.getTwoFactorAuth().isEnabled())
         {
             AuthResponse res = new AuthResponse();
@@ -90,7 +98,24 @@ public class AuthController {
 
             res.setTwoFactorAuthEnabled(true);
 
-            String otp = otpUtils.generateOtp();
+            String otp = OtpUtils.generateOTP();
+
+            TwoFactorOTP oldTwoFactorOTP = twoFactorOtpService.findByUser(authUser.getId());
+
+            if (oldTwoFactorOTP != null )
+            {
+                twoFactorOtpService.deleteTwoFactorOtp(oldTwoFactorOTP);
+
+
+            }
+
+            TwoFactorOTP newTwoFactorOTP = twoFactorOtpService.createTwoFactorOtpService(authUser,otp,jwt);
+
+
+
+            res.setSession(new TwoFactorOTP().getId());
+
+            return new ResponseEntity<>(res,HttpStatus.ACCEPTED);
 
         }
 
