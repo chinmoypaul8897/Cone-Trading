@@ -11,6 +11,8 @@ public interface VerificationCodeService {
 
     VerificationCode getVerificationCodeByUser(Long userId );
 
+
+
     void deleteVerificationCodeById (VerificationCode verificationCode);
 
 
