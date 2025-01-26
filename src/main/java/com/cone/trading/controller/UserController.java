@@ -43,6 +43,9 @@ public class UserController {
     public ResponseEntity<User> enableTwoFactorAuthentication (@RequestHeader("Authorization") String jwt ) throws Exception {
         User user = userService.findUserProfileByJwt(jwt);
 
+
+
+
         return new ResponseEntity<User>(user , HttpStatus.OK);
     }
 
