@@ -90,7 +90,7 @@ public class AuthController {
 
             res.setTwoFactorAuthEnabled(true);
 
-
+            String otp = otpUtils.generateOtp();
 
         }
 
