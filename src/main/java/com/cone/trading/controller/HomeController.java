@@ -10,4 +10,10 @@ public class HomeController {
     {
         return "Welcome to cone trading ";
     }
+
+    @GetMapping("/api")
+    public String secure()
+    {
+        return "Welcome to cone trading - > Secure and Safe ";
+    }
 }
