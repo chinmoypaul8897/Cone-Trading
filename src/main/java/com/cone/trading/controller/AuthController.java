@@ -1,7 +1,9 @@
 package com.cone.trading.controller;
 
+import com.cone.trading.config.JwtProvider;
 import com.cone.trading.model.User;
 import com.cone.trading.repository.UserRepository;
+import com.cone.trading.response.AuthResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -21,7 +23,7 @@ public class AuthController {
     private UserRepository userRepository;
 
     @PostMapping("/signup")
-    public ResponseEntity<User> register( @RequestBody User user ) throws Exception
+    public ResponseEntity<AuthResponse> register(@RequestBody User user ) throws Exception
     {
 
         // email check
@@ -49,9 +51,15 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         // create jwt token
+        String jwt = JwtProvider.generateToken(auth);
+
+        AuthResponse res = new AuthResponse();
+        res.setJwt(jwt);
+        res.setStatus(true);
+        res.setMessage("register success");
 
 
-        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
 
 
     }
