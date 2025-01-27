@@ -104,7 +104,7 @@ public class CoinServiceImpl implements CoinService {
             JsonNode jsonNode = objectMapper.readTree(response.getBody());
 
             Coin coin = new Coin();
-            coin.setId(jsonNode.get("id").asLong());
+            coin.setId(jsonNode.get("id").asText());
             coin.setName(jsonNode.get("name").asText());
             coin.setSymbol(jsonNode.get("symbol").asText());
             coin.setImage(jsonNode.get("image").get("large").asText());
@@ -194,7 +194,7 @@ public class CoinServiceImpl implements CoinService {
     }
 
     @Override
-    public String GetTradingCoins() throws Exception {
+    public String getTradingCoins() throws Exception {
         String url = "https://api.coingecko.com/api/v3/search/trading";
 
         RestTemplate restTemplate = new RestTemplate();

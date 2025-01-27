@@ -15,7 +15,7 @@ public class Coin {
 
     @Id
     @JsonProperty("id")
-    private Long id;
+    private String id;
 
     @JsonProperty("symbol")
     private String symbol;
@@ -96,11 +96,11 @@ public class Coin {
     // Getters and setters
 
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -308,7 +308,7 @@ public class Coin {
     @Override
     public String toString() {
         return "Coin{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", symbol='" + symbol + '\'' +
                 ", name='" + name + '\'' +
                 ", image='" + image + '\'' +
