@@ -9,7 +9,7 @@ import lombok.Data;
 public class ForgotPasswordToken {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id ;
+    private String id ;
 
     @OneToOne
     private User user ;
@@ -20,11 +20,11 @@ public class ForgotPasswordToken {
 
     private String sendTo ;
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -63,7 +63,7 @@ public class ForgotPasswordToken {
     @Override
     public String toString() {
         return "ForgotPasswordToken{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", user=" + user +
                 ", otp='" + otp + '\'' +
                 ", verificationType=" + verificationType +
