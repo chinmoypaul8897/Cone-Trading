@@ -7,6 +7,7 @@ import com.cone.trading.model.ForgotPasswordToken;
 import com.cone.trading.model.User;
 import com.cone.trading.model.VerificationCode;
 import com.cone.trading.request.ResetPasswordRequest;
+import com.cone.trading.response.ApiResponse;
 import com.cone.trading.response.AuthResponse;
 import com.cone.trading.service.EmailService;
 import com.cone.trading.service.ForgotPasswordService;
@@ -143,7 +144,7 @@ public class UserController {
 
 
     @PatchMapping("auth/users/reset-password/verify-otp")
-    public ResponseEntity<User> resetPassword(
+    public ResponseEntity<ApiResponse> resetPassword(
             @RequestParam String id  ,
             @RequestBody ResetPasswordRequest req ,
             @RequestHeader("Authorization") String jwt ) throws Exception {
@@ -155,8 +156,13 @@ public class UserController {
 
         if (isVerified) {
             userService.updatePassword(forgotPasswordToken.getUser(), req.getPassword());
-            ApiRespone
+            ApiResponse res = new ApiResponse();
+            res.setMessage("Password Update Successfully ");
+            return new ResponseEntity<>(res,HttpStatus.ACCEPTED);
         }
+
+        throw new Exception("Wrong Otp ");
+
 
 
     }
