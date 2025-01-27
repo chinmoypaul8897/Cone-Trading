@@ -95,4 +95,245 @@ public class Coin {
 
     // Getters and setters
 
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public double getCurrentPrice() {
+        return currentPrice;
+    }
+
+    public void setCurrentPrice(double currentPrice) {
+        this.currentPrice = currentPrice;
+    }
+
+    public long getMarketCap() {
+        return marketCap;
+    }
+
+    public void setMarketCap(long marketCap) {
+        this.marketCap = marketCap;
+    }
+
+    public int getMarketCapRank() {
+        return marketCapRank;
+    }
+
+    public void setMarketCapRank(int marketCapRank) {
+        this.marketCapRank = marketCapRank;
+    }
+
+    public long getFullyDilutedValuation() {
+        return fullyDilutedValuation;
+    }
+
+    public void setFullyDilutedValuation(long fullyDilutedValuation) {
+        this.fullyDilutedValuation = fullyDilutedValuation;
+    }
+
+    public long getTotalVolume() {
+        return totalVolume;
+    }
+
+    public void setTotalVolume(long totalVolume) {
+        this.totalVolume = totalVolume;
+    }
+
+    public double getHigh24h() {
+        return high24h;
+    }
+
+    public void setHigh24h(double high24h) {
+        this.high24h = high24h;
+    }
+
+    public double getLow24h() {
+        return low24h;
+    }
+
+    public void setLow24h(double low24h) {
+        this.low24h = low24h;
+    }
+
+    public double getPriceChange24h() {
+        return priceChange24h;
+    }
+
+    public void setPriceChange24h(double priceChange24h) {
+        this.priceChange24h = priceChange24h;
+    }
+
+    public double getPriceChangePercentage24h() {
+        return priceChangePercentage24h;
+    }
+
+    public void setPriceChangePercentage24h(double priceChangePercentage24h) {
+        this.priceChangePercentage24h = priceChangePercentage24h;
+    }
+
+    public long getMarketCapChange24h() {
+        return marketCapChange24h;
+    }
+
+    public void setMarketCapChange24h(long marketCapChange24h) {
+        this.marketCapChange24h = marketCapChange24h;
+    }
+
+    public double getMarketCapChangePercentage24h() {
+        return marketCapChangePercentage24h;
+    }
+
+    public void setMarketCapChangePercentage24h(double marketCapChangePercentage24h) {
+        this.marketCapChangePercentage24h = marketCapChangePercentage24h;
+    }
+
+    public long getCirculatingSupply() {
+        return circulatingSupply;
+    }
+
+    public void setCirculatingSupply(long circulatingSupply) {
+        this.circulatingSupply = circulatingSupply;
+    }
+
+    public long getTotalSupply() {
+        return totalSupply;
+    }
+
+    public void setTotalSupply(long totalSupply) {
+        this.totalSupply = totalSupply;
+    }
+
+    public long getMaxSupply() {
+        return maxSupply;
+    }
+
+    public void setMaxSupply(long maxSupply) {
+        this.maxSupply = maxSupply;
+    }
+
+    public double getAth() {
+        return ath;
+    }
+
+    public void setAth(double ath) {
+        this.ath = ath;
+    }
+
+    public double getAthChangePercentage() {
+        return athChangePercentage;
+    }
+
+    public void setAthChangePercentage(double athChangePercentage) {
+        this.athChangePercentage = athChangePercentage;
+    }
+
+    public Date getAthDate() {
+        return athDate;
+    }
+
+    public void setAthDate(Date athDate) {
+        this.athDate = athDate;
+    }
+
+    public double getAtl() {
+        return atl;
+    }
+
+    public void setAtl(double atl) {
+        this.atl = atl;
+    }
+
+    public double getAtlChangePercentage() {
+        return atlChangePercentage;
+    }
+
+    public void setAtlChangePercentage(double atlChangePercentage) {
+        this.atlChangePercentage = atlChangePercentage;
+    }
+
+    public Date getAtlDate() {
+        return atlDate;
+    }
+
+    public void setAtlDate(Date atlDate) {
+        this.atlDate = atlDate;
+    }
+
+    public String getRoi() {
+        return roi;
+    }
+
+    public void setRoi(String roi) {
+        this.roi = roi;
+    }
+
+    public String getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(String lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Coin{" +
+                "id=" + id +
+                ", symbol='" + symbol + '\'' +
+                ", name='" + name + '\'' +
+                ", image='" + image + '\'' +
+                ", currentPrice=" + currentPrice +
+                ", marketCap=" + marketCap +
+                ", marketCapRank=" + marketCapRank +
+                ", fullyDilutedValuation=" + fullyDilutedValuation +
+                ", totalVolume=" + totalVolume +
+                ", high24h=" + high24h +
+                ", low24h=" + low24h +
+                ", priceChange24h=" + priceChange24h +
+                ", priceChangePercentage24h=" + priceChangePercentage24h +
+                ", marketCapChange24h=" + marketCapChange24h +
+                ", marketCapChangePercentage24h=" + marketCapChangePercentage24h +
+                ", circulatingSupply=" + circulatingSupply +
+                ", totalSupply=" + totalSupply +
+                ", maxSupply=" + maxSupply +
+                ", ath=" + ath +
+                ", athChangePercentage=" + athChangePercentage +
+                ", athDate=" + athDate +
+                ", atl=" + atl +
+                ", atlChangePercentage=" + atlChangePercentage +
+                ", atlDate=" + atlDate +
+                ", roi='" + roi + '\'' +
+                ", lastUpdated='" + lastUpdated + '\'' +
+                '}';
+    }
 }
