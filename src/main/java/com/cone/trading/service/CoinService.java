@@ -8,11 +8,11 @@ public interface CoinService {
 
     List<Coin> getCoinList(int page ) throws Exception;
 
-    String getMarketChart(String coinId , int days );
+    String getMarketChart(String coinId , int days ) throws Exception;
 
-    String getCoinDetails (String coinId);
+    String getCoinDetails (String coinId) throws Exception;
 
-    Coin findById (String coinId );
+    Coin findById (String coinId ) throws Exception;
 
     String searchCoin (String keyword);
 
