@@ -1,5 +1,6 @@
 package com.cone.trading.service;
 
+import com.cone.trading.domain.OrderType;
 import com.cone.trading.model.Order;
 import com.cone.trading.model.User;
 import com.cone.trading.model.Wallet;
@@ -71,10 +72,24 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public Wallet payOrderPayment(Order order, User user) {
+    public Wallet payOrderPayment(Order order, User user) throws Exception {
 
         Wallet wallet = getUserWallet(user);
-        return null ;
+        if (order.getOrderType().equals(OrderType.BUY))
+        {
+            BigDecimal newBalance = wallet.getBalance().subtract(order.getPrice());
+            if (newBalance.compareTo(order.getPrice()) < 0 )
+            {
+                throw new Exception("Insufficiant funds for this transcation ");
+            }
+            wallet.setBalance(newBalance);
 
+        }
+        else{
+            BigDecimal newBalance = wallet.getBalance().add(order.getPrice());
+            wallet.setBalance(newBalance);
+        }
+        walletRepository.save(wallet);
+        return wallet;
     }
 }

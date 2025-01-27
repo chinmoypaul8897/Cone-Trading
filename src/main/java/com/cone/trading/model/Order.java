@@ -34,17 +34,7 @@ public class Order {
     @OneToOne(mappedBy = "order" , cascade = CascadeType.ALL)
     private OrderItem orderItem;
 
-
-
-
-
-
-
-
-
-
-
-
+    // Getter and Setters created
 
 
     public Long getId() {
@@ -55,10 +45,64 @@ public class Order {
         this.id = id;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public OrderType getOrderType() {
+        return orderType;
+    }
+
+    public void setOrderType(OrderType orderType) {
+        this.orderType = orderType;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public OrderItem getOrderItem() {
+        return orderItem;
+    }
+
+    public void setOrderItem(OrderItem orderItem) {
+        this.orderItem = orderItem;
+    }
+
     @Override
     public String toString() {
         return "Order{" +
                 "id=" + id +
+                ", user=" + user +
+                ", orderType=" + orderType +
+                ", price=" + price +
+                ", timestamp=" + timestamp +
+                ", status=" + status +
+                ", orderItem=" + orderItem +
                 '}';
     }
 }
