@@ -1,5 +1,6 @@
 package com.cone.trading.service;
 
-public class ForgotPassword {
+public class ForgotPasswordImpl {
+
 
 }
