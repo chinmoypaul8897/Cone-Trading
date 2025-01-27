@@ -1,4 +1,4 @@
-package com.cone.trading;
+package com.cone.trading.request;
 
 import com.cone.trading.domain.VerificationType;
 import com.cone.trading.model.VerificationCode;

@@ -1,11 +1,12 @@
 package com.cone.trading.controller;
 
 
-import com.cone.trading.ForgotPasswordTokenRequest;
+import com.cone.trading.request.ForgotPasswordTokenRequest;
 import com.cone.trading.domain.VerificationType;
 import com.cone.trading.model.ForgotPasswordToken;
 import com.cone.trading.model.User;
 import com.cone.trading.model.VerificationCode;
+import com.cone.trading.request.ResetPasswordRequest;
 import com.cone.trading.response.AuthResponse;
 import com.cone.trading.service.EmailService;
 import com.cone.trading.service.ForgotPasswordService;
@@ -138,6 +139,28 @@ public class UserController {
 
         return new ResponseEntity<>(response , HttpStatus.OK);
     }
+
+
+
+    @PatchMapping("auth/users/reset-password/verify-otp")
+    public ResponseEntity<User> resetPassword(
+            @RequestParam String id  ,
+            @RequestBody ResetPasswordRequest req ,
+            @RequestHeader("Authorization") String jwt ) throws Exception {
+
+
+        ForgotPasswordToken forgotPasswordToken = forgotPasswordService.findById(id);
+
+        boolean isVerified = forgotPasswordToken.getOtp().equals(req.getOtp());
+
+        if (isVerified) {
+            userService.updatePassword(forgotPasswordToken.getUser(), req.getPassword());
+            ApiRespone
+        }
+
+
+    }
+
 
 
 }
