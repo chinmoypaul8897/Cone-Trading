@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface CoinService {
 
-    List<Coin> getCoinList(int page );
+    List<Coin> getCoinList(int page ) throws Exception;
 
     String getMarketChart(String coinId , int days );
 
