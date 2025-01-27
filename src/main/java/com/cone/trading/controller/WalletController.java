@@ -1,7 +1,9 @@
 package com.cone.trading.controller;
 
+import com.cone.trading.model.Order;
 import com.cone.trading.model.User;
 import com.cone.trading.model.Wallet;
+import com.cone.trading.model.WalletTransaction;
 import com.cone.trading.service.UserService;
 import com.cone.trading.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +31,33 @@ public class WalletController {
 
     }
 
+    @PutMapping("/api/wallet/{walletId}/transfer")
     public ResponseEntity<Wallet> walletToWalletTransfer (
             @RequestHeader("Authorization") String jwt ,
-            @PathVariable Long walletId )
+            @PathVariable Long walletId,
+            @RequestBody WalletTransaction req)
             throws Exception
     {
+        User senderUser = userService.findUserProfileByJwt(jwt);
+        Wallet receiverWallet = walletService.findWalletById(walletId);
 
+        Wallet wallet = walletService.walletToWalletTransfer(senderUser,receiverWallet, req.getAmount());
+
+        return new ResponseEntity<>(wallet,HttpStatus.ACCEPTED);
+    }
+
+
+    @PutMapping("/api/wallet/order/{orderId}/pay")
+    public ResponseEntity<Wallet> payOrderPayment (
+            @RequestHeader("Authorization") String jwt ,
+            @PathVariable Long orderId)
+            throws Exception {
+        User user = userService.findUserProfileByJwt(jwt);
+        Order order = orderService.getOrderById(orderId);
+
+        Wallet wallet = walletService.payOrderPayment(order,user);
+
+        return new ResponseEntity<>(wallet,HttpStatus.ACCEPTED);
     }
 
 
