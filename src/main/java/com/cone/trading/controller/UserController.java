@@ -1,16 +1,23 @@
 package com.cone.trading.controller;
 
 
+import com.cone.trading.ForgotPasswordTokenRequest;
 import com.cone.trading.domain.VerificationType;
+import com.cone.trading.model.ForgotPasswordToken;
 import com.cone.trading.model.User;
 import com.cone.trading.model.VerificationCode;
+import com.cone.trading.response.AuthResponse;
 import com.cone.trading.service.EmailService;
+import com.cone.trading.service.ForgotPasswordService;
 import com.cone.trading.service.UserService;
 import com.cone.trading.service.VerificationCodeService;
+import com.cone.trading.utils.OtpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 public class UserController {
@@ -22,6 +29,11 @@ public class UserController {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private ForgotPasswordService forgotPasswordService;
+
+
     private String jwt;
 
     @GetMapping("/api/users/profile")
@@ -83,5 +95,49 @@ public class UserController {
 
         throw new Exception("Wrong otp ");
     }
+
+
+
+
+
+
+
+    @PostMapping("auth/users/reset-password/send-otp")
+    public ResponseEntity<AuthResponse> sendForgotPasswordOtp (
+
+            @RequestBody ForgotPasswordTokenRequest req ) throws Exception
+    {
+
+        User user = userService.findUserByEmail(req.getSendTo());
+
+        String otp = OtpUtils.generateOTP();
+
+        UUID uuid = UUID.randomUUID();
+
+        String id = uuid.toString();
+
+        ForgotPasswordToken token = forgotPasswordService.findByUser(user.getId());
+
+        if (token==null)
+        {
+            token = forgotPasswordService.createToken(user , id , otp , req.getVerificationType() , req.getSendTo());
+        }
+
+        if (req.getVerificationType().equals(VerificationType.EMAIL) )
+        {
+            emailService.sendVerificationOtpEmail
+                    (user.getEmail() , token.getOtp());
+        }
+
+
+        AuthResponse response  = new AuthResponse();
+        response.setSession(token.getId());
+        response.setMessage("Password reset otp sent successfully  ");
+
+
+
+        return new ResponseEntity<>(response , HttpStatus.OK);
+    }
+
 
 }
