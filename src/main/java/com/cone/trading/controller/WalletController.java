@@ -4,6 +4,7 @@ import com.cone.trading.model.Order;
 import com.cone.trading.model.User;
 import com.cone.trading.model.Wallet;
 import com.cone.trading.model.WalletTransaction;
+import com.cone.trading.service.OrderService;
 import com.cone.trading.service.UserService;
 import com.cone.trading.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,9 @@ public class WalletController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private OrderService orderService;
 
     @GetMapping("api/wallet")
     public ResponseEntity<Wallet> getUserWallet (@RequestHeader("Authorization") String jwt ) throws Exception {
