@@ -9,7 +9,7 @@ public interface WithdrawalService {
 
     Withdrawal reqestWithdrawal (Long amount , User user);
 
-    Withdrawal proceedWithdrawal(Long withdrawalId, boolean accept );
+    Withdrawal proceedWithdrawal(Long withdrawalId, boolean accept ) throws Exception;
 
     List<Withdrawal> getUsersWithdrawalHistory(User user);
 
