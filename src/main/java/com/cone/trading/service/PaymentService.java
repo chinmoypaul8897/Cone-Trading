@@ -3,6 +3,7 @@ package com.cone.trading.service;
 import com.cone.trading.domain.PaymentMethod;
 import com.cone.trading.model.PaymentOrder;
 import com.cone.trading.model.User;
+import com.cone.trading.response.PaymentResponse;
 import org.springframework.security.core.parameters.P;
 
 public interface PaymentService {
@@ -12,9 +13,12 @@ public interface PaymentService {
 
     PaymentOrder getPaymentOrderById (Long id );
 
-    Boolean proccedPaymentOrderById (PaymentOrder paymentOrder , String  paymentId );
+    Boolean ProccedPaymentOrderById (PaymentOrder paymentOrder , String  paymentId );
 
     PaymentResponse createRazorpayPaymentLink(User user , Long amount );
+
+    PaymentResponse createStripePaymentLink(User user , Long amount , Long orderId );
+
 
 
 
