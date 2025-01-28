@@ -5,6 +5,7 @@ import com.cone.trading.model.PaymentOrder;
 import com.cone.trading.model.User;
 import com.cone.trading.response.PaymentResponse;
 import com.razorpay.RazorpayException;
+import com.stripe.exception.StripeException;
 import org.springframework.security.core.parameters.P;
 
 public interface PaymentService {
@@ -18,7 +19,7 @@ public interface PaymentService {
 
     PaymentResponse createRazorpayPaymentLink(User user , Long amount ) throws RazorpayException;
 
-    PaymentResponse createStripePaymentLink(User user , Long amount , Long orderId );
+    PaymentResponse createStripePaymentLink(User user , Long amount , Long orderId ) throws StripeException;
 
 
 
