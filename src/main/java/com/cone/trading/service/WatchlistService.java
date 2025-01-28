@@ -6,13 +6,13 @@ import com.cone.trading.model.Watchlist;
 
 public interface WatchlistService {
 
-    Watchlist findUserWatchList (Long userId );
+    Watchlist findUserWatchList (Long userId ) throws Exception;
 
     Watchlist createWatchlist( User user);
 
-    Watchlist findById(Long id );
+    Watchlist findById(Long id ) throws Exception;
 
-    Coin addItemToWatchlist(Coin coin , User user);
+    Coin addItemToWatchlist(Coin coin , User user) throws Exception;
 
 
 
