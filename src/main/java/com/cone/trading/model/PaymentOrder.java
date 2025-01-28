@@ -1,6 +1,7 @@
 package com.cone.trading.model;
 
 
+import com.cone.trading.domain.PaymentOrderStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
