@@ -6,7 +6,7 @@ import lombok.Data;
 
 import javax.naming.ldap.PagedResultsControl;
 
-//@Data
+@Data
 @Entity
 public class OrderItem {
     @Id

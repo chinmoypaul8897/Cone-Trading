@@ -6,9 +6,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import javax.naming.ldap.PagedResultsControl;
-
-@Entity
 @Data
+@Entity
 public class User {
 
     @Id

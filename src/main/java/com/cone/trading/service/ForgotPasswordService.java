@@ -3,6 +3,8 @@ package com.cone.trading.service;
 import com.cone.trading.domain.VerificationType;
 import com.cone.trading.model.ForgotPasswordToken;
 import com.cone.trading.model.User;
+import org.springframework.stereotype.Service;
+
 
 public interface ForgotPasswordService {
 

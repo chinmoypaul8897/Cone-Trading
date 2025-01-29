@@ -12,6 +12,7 @@ import java.util.Locale;
 
 @Data
 @Entity
+@Table(name="orders")
 public class Order {
 
     @Id

@@ -15,14 +15,18 @@ public class VerificationCode {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id ;
 
-    @OneToOne
+
+    //@OneToOne
     private String otp ;
 
+    @OneToOne
     private User user ;
 
     private String email ;
     private String mobile ;
     private VerificationType verificationType;
+
+    // getters and setters
 
     public Long getId() {
         return id;

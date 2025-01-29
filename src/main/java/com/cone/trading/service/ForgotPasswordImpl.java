@@ -5,9 +5,11 @@ import com.cone.trading.model.ForgotPasswordToken;
 import com.cone.trading.model.User;
 import com.cone.trading.repository.ForgotPasswordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Service
 public class ForgotPasswordImpl implements ForgotPasswordService {
 
     @Autowired
