@@ -154,7 +154,7 @@ The backend will be accessible at `http://localhost:8080`.
 - `GET /api/transactions/payments`: Get payment history
 
 ---
-![Screenshot 2025-01-30 035312](https://github.com/user-attachments/assets/3d8cb0a4-09d2-4bb4-84c7-81dc1b647d88)
+
 
 
 
