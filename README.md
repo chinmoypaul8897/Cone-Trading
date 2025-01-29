@@ -14,8 +14,6 @@ This platform is developed using Spring Boot, Spring Security, and MySQL for the
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Running the Project](#running-the-project)
-- [API Documentation](#api-documentation)
-- [License](#license)
 
 ## Features
 
@@ -116,46 +114,4 @@ mvn spring-boot:run
 The backend will be accessible at `http://localhost:8080`.
 
 ---
-
-## API Documentation
-
-### 1. **User Authentication**
-
-- `POST /api/auth/signup`: Sign up a new user
-- `POST /api/auth/login`: User login
-- `POST /api/auth/logout`: User logout
-- `POST /api/auth/reset-password`: Reset password
-- `GET /api/auth/profile`: Get user profile (requires authentication)
-
-### 2. **Cryptocurrency Transactions**
-
-- `POST /api/crypto/buy`: Buy cryptocurrency
-- `POST /api/crypto/sell`: Sell cryptocurrency
-- `GET /api/crypto/market`: Get all cryptocurrencies (via CoinGecko API)
-- `GET /api/crypto/top`: Get the top 50 trending cryptocurrencies
-
-### 3. **Wallet and Payments**
-
-- `GET /api/wallet`: Get user wallet details
-- `POST /api/wallet/recharge`: Recharge wallet via Razorpay or Stripe
-- `POST /api/wallet/withdraw`: Withdraw funds to bank account
-- `POST /api/wallet/transfer`: Transfer funds between wallets
-
-### 4. **Watchlist Management**
-
-- `POST /api/watchlist/add`: Add coin to watchlist
-- `POST /api/watchlist/remove`: Remove coin from watchlist
-- `GET /api/watchlist`: View user watchlist
-
-### 5. **Transaction History**
-
-- `GET /api/transactions`: Get buy/sell transaction history
-- `GET /api/transactions/withdrawals`: Get withdrawal history
-- `GET /api/transactions/payments`: Get payment history
-
----
-
-
-
-
 Feel free to reach out for any questions or further clarifications.
