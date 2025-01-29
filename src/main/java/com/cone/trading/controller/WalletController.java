@@ -1,18 +1,21 @@
 package com.cone.trading.controller;
 
+import com.cone.trading.domain.WalletTransactionType;
 import com.cone.trading.model.*;
 import com.cone.trading.response.PaymentResponse;
 import com.cone.trading.service.OrderService;
 import com.cone.trading.service.PaymentService;
 import com.cone.trading.service.UserService;
 import com.cone.trading.service.WalletService;
+import com.stripe.service.tax.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RestController
-@RequestMapping("/api/wallet")
 public class WalletController {
     @Autowired
     private WalletService walletService;
@@ -25,6 +28,9 @@ public class WalletController {
 
     @Autowired
     private PaymentService paymentService;
+
+//    @Autowired
+//    private TransactionService transactionService;
 
     @GetMapping("api/wallet")
     public ResponseEntity<Wallet> getUserWallet (@RequestHeader("Authorization") String jwt ) throws Exception {
@@ -48,6 +54,15 @@ public class WalletController {
         Wallet receiverWallet = walletService.findWalletById(walletId);
 
         Wallet wallet = walletService.walletToWalletTransfer(senderUser,receiverWallet, req.getAmount());
+
+//        transactionService.createTransaction(wallet,
+//                WalletTransactionType.WALLET_TRANSFER,
+//                receiverWallet.getId(),
+//                req.getPurpose(),
+//                req.getAmount()
+//        );
+
+
 
         return new ResponseEntity<>(wallet,HttpStatus.ACCEPTED);
     }
@@ -82,6 +97,11 @@ public class WalletController {
 
         Boolean status = paymentService.ProccedPaymentOrderById(order,paymentId);
 
+
+        if (wallet.getBalance()==null)
+        {
+            wallet.setBalance(BigDecimal.valueOf(0));
+        }
         if (status)
         {
             wallet =walletService.addBalance(wallet,order.getAmount());

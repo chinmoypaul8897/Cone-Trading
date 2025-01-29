@@ -1,13 +1,11 @@
 package com.cone.trading.controller;
 
+import com.cone.trading.domain.WalletTransactionType;
 import com.cone.trading.model.User;
 import com.cone.trading.model.Wallet;
 import com.cone.trading.model.WalletTransaction;
 import com.cone.trading.model.Withdrawal;
-import com.cone.trading.service.UserService;
-import com.cone.trading.service.WalletService;
-import com.cone.trading.service.WithdrawalService;
-import com.cone.trading.service.WithdrawalServiceImpl;
+import com.cone.trading.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-
 public class WithdrawalController {
 
     @Autowired
@@ -28,8 +25,8 @@ public class WithdrawalController {
     @Autowired
     private UserService userService;
 
-//    @Autowired
-//    private WalletTransactionService walletTransactionService;
+    @Autowired
+    private TransactionService transactionService;
 
     @PostMapping("/api/withdrawal/{amount}")
     public ResponseEntity<?> withdrawalRequest(
@@ -44,7 +41,12 @@ public class WithdrawalController {
         walletService.addBalance(userWallet,-withdrawal.getAmount());
 
 
-       // WalletTransaction walletTransaction = walletTransactionService.createTransaction();
+       WalletTransaction walletTransaction = transactionService.createTransaction(
+               userWallet,
+               WalletTransactionType.WITHDRAWAL ,
+               "bank account withdrawal" ,
+               withdrawal.getAmount()
+       );
 
 
         return new ResponseEntity<>(withdrawal, HttpStatus.OK);

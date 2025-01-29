@@ -3,11 +3,13 @@ package com.cone.trading.controller;
 import com.cone.trading.config.JwtProvider;
 import com.cone.trading.model.TwoFactorOTP;
 import com.cone.trading.model.User;
+import com.cone.trading.model.Watchlist;
 import com.cone.trading.repository.UserRepository;
 import com.cone.trading.response.AuthResponse;
 import com.cone.trading.service.CustomeUserDetailsService;
 import com.cone.trading.service.EmailService;
 import com.cone.trading.service.TwoFactorOtpService;
+import com.cone.trading.service.WatchlistService;
 import com.cone.trading.utils.OtpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,6 +37,9 @@ public class AuthController {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private WatchlistService watchlistService;
+
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> register(@RequestBody User user ) throws Exception
     {
@@ -56,6 +61,8 @@ public class AuthController {
 
         // save new user data
         User savedUser = userRepository.save(newUser);
+
+        watchlistService.createWatchlist(savedUser);
 
         Authentication auth = new UsernamePasswordAuthenticationToken(
                 user.getEmail(),

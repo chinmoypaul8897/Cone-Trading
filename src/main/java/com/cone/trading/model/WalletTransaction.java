@@ -2,8 +2,8 @@ package com.cone.trading.model;
 
 import com.cone.trading.domain.WalletTransactionType;
 import jakarta.persistence.*;
-import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 //@Data
@@ -25,8 +25,6 @@ public class WalletTransaction {
     private String purpose ;
 
     private Long amount ;
-
-
 
     // Getters and setters
     public Long getId() {
@@ -97,4 +95,17 @@ public class WalletTransaction {
                 ", amount=" + amount +
                 '}';
     }
+
+    public void setTransactionType(WalletTransactionType transactionType) {
+        // Instead of 'type'
+    }
+
+    public void setDescription(String description) {
+        // Instead of 'purpose'
+    }
+
+
+
+
+
 }
