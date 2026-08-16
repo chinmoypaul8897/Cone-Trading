@@ -98,7 +98,7 @@ public class AuthController {
 
         User authUser = userRepository.findByEmail(userName);
 
-        if (user.getTwoFactorAuth().isEnabled())
+        if (authUser.getTwoFactorAuth().isEnabled())
         {
             AuthResponse res = new AuthResponse();
 
@@ -123,7 +123,7 @@ public class AuthController {
            emailService.sendVerificationOtpEmail(userName,otp);
 
 
-            res.setSession(new TwoFactorOTP().getId());
+            res.setSession(newTwoFactorOTP.getId());
 
             return new ResponseEntity<>(res,HttpStatus.ACCEPTED);
 

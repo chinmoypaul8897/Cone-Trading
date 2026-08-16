@@ -4,6 +4,7 @@ import com.cone.trading.model.User;
 import com.cone.trading.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,6 +25,10 @@ public class CustomeUserDetailsService implements UserDetailsService {
         }
         List<GrantedAuthority> authorityList = new ArrayList<>();
 
+        // carry the user's role through so /api/admin/** can be gated on it
+        if (user.getRole() != null) {
+            authorityList.add(new SimpleGrantedAuthority(user.getRole().toString()));
+        }
 
         return new org.springframework.security.core.userdetails.User(user.getEmail(),
                 user.getPassword(),authorityList);

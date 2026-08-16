@@ -63,7 +63,8 @@ public class WithdrawalController {
 
         Withdrawal withdrawal = withdrawalService.proceedWithdrawal(id,accept);
 
-        Wallet userWallet = walletService.getUserWallet(user);
+        // refund the user who requested the withdrawal, not the admin handling it
+        Wallet userWallet = walletService.getUserWallet(withdrawal.getUser());
 
         if (!accept)
         {
