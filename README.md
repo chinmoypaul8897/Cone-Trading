@@ -14,7 +14,7 @@ Users sign up, fund a wallet through Razorpay or Stripe, buy and sell cryptocurr
 [![Stripe](https://img.shields.io/badge/Stripe-635BFF?style=flat-square&logo=stripe&logoColor=white)](https://stripe.com/)
 [![CoinGecko](https://img.shields.io/badge/CoinGecko-API-8DC63F?style=flat-square&logo=coingecko&logoColor=white)](https://www.coingecko.com/en/api)
 
-`REST API` · `40+ endpoints` · `15 JPA entities` · `Stateless JWT auth` · `Email 2FA`
+`REST API` · `37 endpoints` · `14 JPA entities` · `Stateless JWT auth` · `Email 2FA`
 
 </div>
 
@@ -43,11 +43,11 @@ Users sign up, fund a wallet through Razorpay or Stripe, buy and sell cryptocurr
 | **Market data** | Live coin listings, per-coin detail, OHLC market charts, keyword search, top-50 by market cap, and trending coins — proxied from the CoinGecko API |
 | **Trading** | `BUY` / `SELL` order execution against live prices, with transactional wallet debit/credit and automatic portfolio reconciliation |
 | **Portfolio** | Asset holdings per user per coin, auto-created on first buy, auto-updated on every trade, auto-deleted when a position falls below \$1 |
-| **Wallet** | Balance tracking, wallet-to-wallet transfers, order settlement, and gateway-verified deposits |
-| **Payments** | Razorpay payment links (INR) and Stripe Checkout sessions (USD), with server-side payment verification before any balance is credited |
-| **Withdrawals** | User withdrawal requests against bank details, plus an admin approve/decline flow that refunds the wallet on rejection |
+| **Wallet** | Balance tracking, wallet-to-wallet transfers, order settlement, and deposits credited only after the payment order is resolved |
+| **Payments** | Razorpay payment links (INR) and Stripe Checkout sessions (USD). Razorpay deposits are re-fetched from the gateway and checked for `captured` before crediting; Stripe verification is not implemented — see [limitations](#design-notes--limitations) |
+| **Withdrawals** | User withdrawal requests debited up front, plus an admin approve/decline flow that credits the requester back on rejection |
 | **Watchlist** | A per-user watchlist, provisioned automatically at signup, with coins toggled in and out |
-| **Auth** | Stateless JWT issuance and validation, optional email-OTP two-factor login, OTP-based password reset, and `ROLE_CUSTOMER` / `ROLE_ADMIN` separation |
+| **Auth** | Stateless JWT issuance and validation, optional email-OTP two-factor login, OTP-based password reset, and a `ROLE_CUSTOMER` / `ROLE_ADMIN` claim carried in the token |
 
 ---
 
@@ -66,7 +66,7 @@ flowchart TB
 
     SVC["<b>Service Layer</b> — interface + Impl per domain<br/>OrderService <i>@Transactional</i> · WalletService · PaymentService · AssetService<br/>CoinService · WatchlistService · WithdrawalService · EmailService · TwoFactorOtpService"]
 
-    REPO["<b>Persistence</b> — 14 Spring Data JPA repositories · 15 entities"]
+    REPO["<b>Persistence</b> — 14 Spring Data JPA repositories · 14 entities"]
     DB[("MySQL<br/>cone_trading")]
 
     CG["CoinGecko API<br/><i>market data</i>"]
@@ -122,7 +122,7 @@ sequenceDiagram
         OS->>DB: Persist OrderItem @ current price
         OS->>DB: Persist Order (status PENDING)
         OS->>WS: payOrderPayment(order, user)
-        WS->>WS: Check sufficient balance
+        WS->>WS: Balance check (requires ≥ 2× price — see limitations)
         WS->>DB: Debit wallet
         OS->>DB: Order status → SUCCESS
         OS->>AS: findAssetByUserIdAndCoinId
@@ -157,7 +157,7 @@ Two details worth calling out:
 
 ## How wallet top-up works
 
-Money never enters a wallet on the client's say-so. The client only ever receives a payment *link*; the balance moves in a separate, authenticated call where the server independently re-fetches the payment from the gateway and confirms it was actually captured.
+The client never receives a balance — only a payment *link*. The money moves in a separate, authenticated call, and the amount credited comes from the server's own `PaymentOrder` record rather than anything the client sends. On the Razorpay path the server also re-fetches the payment from the gateway and confirms it was actually captured; **the Stripe path currently skips that check**, which is called out under [limitations](#design-notes--limitations).
 
 ```mermaid
 sequenceDiagram
@@ -192,26 +192,34 @@ sequenceDiagram
     end
 
     rect rgba(251,191,36,0.10)
-    Note over U,DB: Phase 3 — server-side verification
+    Note over U,DB: Phase 3 — resolve the order, then credit
     U->>WC: PUT /api/wallet/deposit?order_id=&payment_id=
     WC->>PS: ProccedPaymentOrderById(order, paymentId)
-    PS->>GW: Fetch payment by ID
-    GW-->>PS: {amount, status}
-    alt status = "captured"
+    alt RAZORPAY — verified
+        PS->>GW: razorpay.payments.fetch(paymentId)
+        GW-->>PS: {amount, status}
+        alt status = "captured"
+            PS-->>WC: true
+        else not captured
+            PS->>DB: PaymentOrder → FAILED
+            PS-->>WC: false
+        end
+    else STRIPE — not verified
+        Note over PS,GW: No gateway call — order is marked<br/>SUCCESS unconditionally (see limitations)
         PS->>DB: PaymentOrder → SUCCESS
         PS-->>WC: true
-        WC->>WS: addBalance(wallet, amount)
+    end
+    alt returned true
+        WC->>WS: addBalance(wallet, order.getAmount())
         WS->>DB: Credit wallet
         WC-->>U: 202 Accepted + updated wallet
-    else not captured
-        PS->>DB: PaymentOrder → FAILED
-        PS-->>WC: false
+    else returned false
         WC-->>U: 202 Accepted, balance unchanged
     end
     end
 ```
 
-The same principle governs withdrawals in reverse: a request debits the wallet immediately and creates a `PENDING` withdrawal, and if an admin later declines it, the amount is credited back.
+A similar shape governs withdrawals in reverse: a request debits the wallet immediately and creates a `PENDING` withdrawal, and if an admin later declines it, the amount is credited back to the requester.
 
 ---
 
@@ -219,7 +227,7 @@ The same principle governs withdrawals in reverse: a request debits the wallet i
 
 Auth is stateless — no server session. `JwtTokenValidator` runs ahead of Spring Security's `BasicAuthenticationFilter`, parses the `Authorization: Bearer <token>` header, and populates the `SecurityContext` with the email and authorities carried in the token's claims. Tokens are HMAC-SHA signed and valid for 24 hours.
 
-When a user has two-factor enabled, sign-in doesn't return a usable token directly. The JWT is generated but held server-side against a one-time OTP emailed to the user; only after that OTP is verified is the token released.
+When the stored user record has two-factor enabled, sign-in doesn't return a usable token directly. The JWT is generated but held server-side against a one-time OTP emailed to the user, and the response carries only a `session` id. Presenting that id together with the correct OTP at `/auth/two-factor/otp/{otp}` releases the token.
 
 ```mermaid
 stateDiagram-v2
@@ -255,7 +263,7 @@ Enabling 2FA is itself OTP-gated: a user requests a code at `/api/users/verifica
 
 ## Data model
 
-Fifteen JPA entities. `User` is the hub — wallet, watchlist, payment details and two-factor settings hang off it one-to-one, while orders, assets, withdrawals and payment orders are one-to-many.
+Fourteen JPA entities, plus `TwoFactorAuth` as an `@Embedded` value type on `User`. `User` is the hub — wallet, watchlist, payment details and two-factor settings hang off it one-to-one, while orders, assets, withdrawals and payment orders are one-to-many.
 
 ```mermaid
 erDiagram
@@ -279,7 +287,7 @@ erDiagram
     USER {
         Long id PK
         String fullName
-        String email UK
+        String email "not DB-unique; checked in code"
         String password
         USER_ROLE role "ROLE_CUSTOMER | ROLE_ADMIN"
         TwoFactorAuth twoFactorAuth "embedded"
@@ -294,7 +302,7 @@ erDiagram
         Long user_id FK
         OrderType orderType "BUY | SELL"
         BigDecimal price
-        OrderStatus status "PENDING | SUCCESS | FAILED | CANCELLED | ERROR"
+        OrderStatus status "PENDING | SUCCESS | FAILED | CANCELLED | PARTIALLY_FAILED | ERROR"
         LocalDateTime timestamp
     }
     ORDER_ITEM {
@@ -383,17 +391,24 @@ The schema is generated by Hibernate (`ddl-auto=update`), so no migration files 
 
 Base URL: `http://localhost:5454`
 
-Every route under `/api/**` requires an `Authorization: Bearer <jwt>` header. Routes under `/auth/**` and `/coins/**` are public.
+Every route under `/api/**` requires an `Authorization: Bearer <jwt>` header. Routes under `/auth/**` and `/coins/**` are public. 37 handlers in total.
+
+### Service
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Public liveness string — `Welcome to cone trading` |
+| `GET` | `/api` | Authenticated liveness string — confirms a token is being accepted |
 
 ### Authentication
 
 | Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/auth/signup` | Register a user, auto-create their watchlist, return a JWT |
-| `POST` | `/auth/signin` | Sign in — returns a JWT, or triggers an OTP email if 2FA is on |
+| `POST` | `/auth/signin` | Sign in — returns a JWT, or emails an OTP and returns a session id if 2FA is on |
 | `POST` | `/auth/two-factor/otp/{otp}?id={sessionId}` | Verify the login OTP and release the withheld JWT |
 | `POST` | `/auth/users/reset-password/send-otp` | Send a password-reset OTP |
-| `PATCH` | `/auth/users/reset-password/verify-otp?id={tokenId}` | Verify the OTP and set a new password |
+| `PATCH` | `/auth/users/reset-password/verify-otp?id={tokenId}` | Verify the OTP and set a new password. Despite the `/auth` prefix this handler declares `@RequestHeader("Authorization")`, so a token must be sent |
 
 ### User
 
@@ -454,8 +469,8 @@ Every route under `/api/**` requires an `Authorization: Bearer <jwt>` header. Ro
 |---|---|---|
 | `POST` | `/api/withdrawal/{amount}` | Request a withdrawal — debits wallet, logs a transaction |
 | `GET` | `/api/withdrawal` | The caller's withdrawal history |
-| `GET` | `/api/admin/withdrawal` | **Admin** — all pending withdrawal requests |
-| `PATCH` | `/api/admin/withdrawal/{id}/proceed/{accept}` | **Admin** — approve or decline; declining refunds the wallet |
+| `GET` | `/api/admin/withdrawal` | **Admin** — every withdrawal request, not only pending ones |
+| `PATCH` | `/api/admin/withdrawal/{id}/proceed/{accept}` | **Admin** — approve or decline; declining credits the requester's wallet back |
 
 ### Watchlist
 
@@ -505,7 +520,7 @@ curl http://localhost:5454/api/asset \
 | Payments | Razorpay 1.4.8 · Stripe 28.2.0 | INR and USD rails behind one `PaymentMethod` enum |
 | Market data | CoinGecko API via `RestTemplate` | Free, keyless, broad coin coverage |
 | Email | Spring Boot Mail | OTP delivery for 2FA and password reset |
-| Boilerplate | Lombok 1.18.24 | Keeps 15 entities readable |
+| Boilerplate | Lombok 1.18.24 | Keeps 14 entities readable |
 | Build | Maven (wrapper included) | Reproducible builds without a local Maven install |
 
 ---
@@ -539,7 +554,7 @@ RAZORPAY_API_SECRET=your_razorpay_secret
 STRIPE_API_KEY=sk_test_xxxxxxxxxxxxxx
 ```
 
-Nothing sensitive is committed — [`application.properties`](src/main/resources/application.properties) reads every credential from the environment. Export them before running:
+[`application.properties`](src/main/resources/application.properties) reads every database and gateway credential from the environment, so none of them are committed. (The JWT signing key is the one secret still hardcoded in source — see [limitations](#design-notes--limitations).) Export the rest before running:
 
 ```bash
 # macOS / Linux
@@ -572,7 +587,7 @@ curl http://localhost:5454
 java -jar target/trading-0.0.1-SNAPSHOT.jar
 ```
 
-> **Payment callbacks** point at `http://localhost:5173` (a Vite dev server) — change the `callback_url` and `setSuccessUrl` values in [`PaymentServiceImpl`](src/main/java/com/cone/trading/service/PaymentServiceImpl.java) if your client runs elsewhere.
+> **Payment callbacks** point at `http://localhost:5173` (a Vite dev server) — change the `callback_url` and `setSuccessUrl` values in [`PaymentServiceImpl`](src/main/java/com/cone/trading/service/PaymentServiceImpl.java) if your client runs elsewhere. Note the Stripe success URL is built as `?order_id` + id with no `=`, so it arrives as a bare flag rather than a readable query parameter.
 
 ---
 
@@ -583,7 +598,7 @@ src/main/java/com/cone/trading/
 ├── config/          # Security filter chain, JWT provider, token filter
 ├── controller/      # 12 REST controllers — the HTTP surface
 ├── domain/          # 8 enums: OrderType, OrderStatus, PaymentMethod, USER_ROLE, …
-├── model/           # 15 JPA entities
+├── model/           # 14 JPA entities + 1 embedded value type
 ├── repository/      # 14 Spring Data repositories
 ├── request/         # Inbound DTOs
 ├── response/        # Outbound DTOs — ApiResponse, AuthResponse, PaymentResponse
@@ -602,18 +617,26 @@ This is a portfolio project built to work through the mechanics of a real tradin
 **Deliberate choices**
 
 - **Orders are transactional.** Order creation, wallet movement and asset reconciliation share one `@Transactional` boundary — a crash mid-order can't leave a debited wallet with no holding to show for it.
-- **Payments are verified server-side.** The client never tells the server how much to credit; the server re-fetches the payment from the gateway and checks for `captured` before touching a balance.
+- **Razorpay payments are verified server-side.** The client never tells the server how much to credit — the amount comes from the stored `PaymentOrder`, and the payment itself is re-fetched from Razorpay and checked for `captured` before any balance moves. The Stripe path still needs the same treatment.
 - **Balances use `BigDecimal`.** Floating-point money is a well-known way to lose cents at scale.
 - **Coins are cached locally.** `/coins/details/{coinId}` upserts the coin into MySQL, so orders reference a stable local row rather than depending on a live CoinGecko call at execution time.
 
 **Known limitations**
 
 - **Passwords are stored and compared in plaintext.** A `BCryptPasswordEncoder` on registration and an `AuthenticationProvider` at sign-in is the correct fix — this is the first thing to change before anything resembling production use.
+- **The JWT signing key is hardcoded** in `JwtConstant.SECRETE_KEY` rather than read from the environment like every other credential. Anyone with the repo can mint valid tokens, so it belongs in an env var alongside the rest.
+- **Stripe deposits are not verified.** `ProccedPaymentOrderById` only calls a gateway on the `RAZORPAY` branch; the fallthrough marks a Stripe order `SUCCESS` without contacting Stripe. Fixing it means storing the Checkout session id on the `PaymentOrder` at creation time (only the URL is kept today) and then checking `payment_status == "paid"`.
+- **A verified Razorpay order is never persisted as `SUCCESS`.** The captured branch returns `true` without saving, so the order stays `PENDING` and the same `payment_id` can be submitted again for repeat credits. One `paymentOrderRepository.save(...)` closes it.
+- **`/api/wallet/deposit` doesn't check order ownership.** It authenticates the caller but never compares `order.getUser()` to the caller, so any authenticated user can settle someone else's payment order into their own wallet.
+- **The Razorpay link is created for 1/100 of the credited amount.** `PaymentServiceImpl` computes `amount * 100` into an unused local and then sends the raw `amount` to the gateway, while the wallet is later credited the full `order.getAmount()` — the Stripe path does apply the multiplier.
+- **The buy-side balance check is wrong.** `payOrderPayment` subtracts the price and then compares the *remainder* against the price again, so a purchase effectively requires twice the order value on hand.
+- **The wallet ledger silently drops most of what it records.** `WalletTransaction.setTransactionType`, `setDescription` and the date setter have empty bodies, so `type`, `purpose` and `date` are never stored and `/api/transactions` returns rows with only an amount. It is also only ever written on withdrawal — buys, sells and transfers log nothing.
+- **Admin endpoints aren't gated yet.** The user's role now travels in the JWT, but `/api/admin/**` still only requires authentication; adding `.requestMatchers("/api/admin/**").hasRole("ADMIN")` to the filter chain is the remaining step. Note that `/auth/signup` issues its token before authorities are attached, so a freshly registered user must sign in again to receive a role-bearing token.
 - **CORS is not configured.** `AppConfig.corsConfigurationSource()` returns `null`, so a browser client on another origin will be blocked. It needs a real `CorsConfiguration` with allowed origins.
 - **`EmailService` has no injected `JavaMailSender`** and no SMTP properties are set, so OTP emails will fail until mail config is added — the OTP itself is still generated and persisted.
-- **Admin endpoints aren't role-gated.** `/api/admin/**` authenticates the caller but never checks for `ROLE_ADMIN`; that needs `.requestMatchers("/api/admin/**").hasRole("ADMIN")` in the filter chain.
 - **No automated tests.** Only the generated context-load test exists. The order and payment flows are the obvious first candidates for coverage.
 - **Order filtering is unimplemented.** `GET /api/orders` accepts `order_type` and `asset_symbol` query params, but `getAllOrderOfUser` currently ignores both and returns all of the user's orders.
+- **Withdrawals aren't balance-checked or tied to bank details.** A request is accepted regardless of wallet balance and without requiring saved `PaymentDetails`, so a balance can go negative.
 - **No rate limiting on CoinGecko calls.** The free tier is rate-limited; a caching layer would matter under real traffic.
 
 ---
