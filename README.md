@@ -612,7 +612,7 @@ The `service` package follows an interface-plus-implementation split throughout 
 
 ## Design notes & limitations
 
-This is a portfolio project built to work through the mechanics of a real trading backend end to end. A few decisions and known gaps, stated plainly:
+Built in early 2025 to work through the mechanics of a trading backend end to end, and re-read closely since. The first list is what still holds up. The second is what a careful review of my own code turned up — some of it has since been fixed in the commit history, and the rest is documented here rather than left for a reader to find on their own.
 
 **Deliberate choices**
 
@@ -645,6 +645,7 @@ This is a portfolio project built to work through the mechanics of a real tradin
 
 **Chinmoy Paul**
 
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-chinmoy--paul-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/chinmoy-paul/)
 [![GitHub](https://img.shields.io/badge/GitHub-chinmoypaul8897-181717?style=flat-square&logo=github)](https://github.com/chinmoypaul8897)
 
 </div>
